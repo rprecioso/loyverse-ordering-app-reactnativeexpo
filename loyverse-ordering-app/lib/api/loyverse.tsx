@@ -2,30 +2,58 @@ import axios, { AxiosInstance } from 'axios';
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL;
 
-export interface Product {
-  id: string;
-  name: string;
-  category_id?: string;
-  description?: string;
+export interface Store {
+  store_id: string;
+  pricing_type: 'FIXED' | 'VARIABLE';
   price: number;
-  cost?: number;
-  barcode?: string;
-  sku?: string;
-  image_url?: string;
-  track_stock: boolean;
-  in_stock?: boolean;
-  variants?: ProductVariant[];
-  modifiers?: Modifier[];
+  available_for_sale: boolean;
+  optimal_stock?: number | null;
+  low_stock?: number | null;
 }
 
-export interface ProductVariant {
-  id: string;
-  variant_name: string;
+export interface Variant {
+  variant_id: string;
+  item_id: string;
   sku?: string;
   barcode?: string;
-  price: number;
+  option1_value?: string;
+  option2_value?: string;
+  option3_value?: string;
+  default_price: number;
   cost?: number;
-  in_stock?: boolean;
+  purchase_cost?: number | null;
+  default_pricing_type: 'FIXED' | 'VARIABLE';
+  stores?: Store[];
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+}
+
+export interface Product {
+  id: string;
+  handle: string;
+  reference_id?: string | null;
+  item_name: string;
+  description?: string | null;
+  track_stock: boolean;
+  sold_by_weight: boolean;
+  is_composite: boolean;
+  use_production: boolean;
+  category_id: string;
+  components: any[]; // define if needed
+  primary_supplier_id?: string | null;
+  tax_ids: string[];
+  modifier_ids: string[];
+  form: string;
+  color: string;
+  image_url?: string | null;
+  option1_name?: string | null;
+  option2_name?: string | null;
+  option3_name?: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+  variants?: Variant[];
 }
 
 export interface Category {
@@ -106,10 +134,15 @@ class LoyverseAPI {
   }
 
   async getProductsByCategory(categoryId: string): Promise<Product[]> {
-    const response = await this.api.get('/items', {
-      params: { category_id: categoryId }
-    });
-    return response.data.items;
+    const response = await this.api.get('/items');
+    const allItems: Product[] = response.data.items;
+
+    const filtered = allItems.filter(
+        (item) => item.category_id === categoryId
+    );
+console.log('filtered');
+    console.log(filtered);
+    return filtered;
   }
 
   // Categories
